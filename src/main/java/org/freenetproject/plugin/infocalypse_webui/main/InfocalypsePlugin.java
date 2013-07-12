@@ -19,6 +19,7 @@ public class InfocalypsePlugin implements FredPlugin, FredPluginThreadless, Fred
     private Homepage homepage;
 
     private final String menuName = "Infocalypse.Menu";
+    public static final String encoding = "UTF-8";
 
     public String getVersion() {
         return "0.1-SNAPSHOT";
@@ -32,8 +33,8 @@ public class InfocalypsePlugin implements FredPlugin, FredPluginThreadless, Fred
         FredPluginL10n l10n = new InfocalypseL10n();
         homepage = new Homepage(pr.getHLSimpleClient());
 
-        pluginRespirator.getPageMaker().addNavigationCategory(Homepage.PATH, menuName, menuName, l10n);
-        tc.register(homepage, menuName, Homepage.PATH, true, menuName, menuName, false, homepage);
+        pluginRespirator.getPageMaker().addNavigationCategory(homepage.path(), menuName, menuName, l10n);
+        tc.register(homepage, menuName, homepage.path(), true, menuName, menuName, false, homepage);
     }
 
     @Override

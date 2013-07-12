@@ -1,37 +1,28 @@
 package org.freenetproject.plugin.infocalypse_webui.ui.web;
 
 import freenet.client.HighLevelSimpleClient;
-import freenet.clients.http.LinkEnabledCallback;
-import freenet.clients.http.Toadlet;
-import freenet.clients.http.ToadletContext;
-import freenet.clients.http.ToadletContextClosedException;
-import freenet.support.api.HTTPRequest;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
+import org.freenetproject.plugin.infocalypse_webui.main.InfocalypsePlugin;
 
-import java.io.IOException;
-import java.net.URI;
+import java.io.StringWriter;
 
 /**
  * Plugin homepage / dashboard.
  */
-public class Homepage extends Toadlet implements LinkEnabledCallback {
-    public static final String PATH = "/infocalypse/";
+public class Homepage extends VelocityToadlet {
 
     public Homepage(HighLevelSimpleClient client) {
-        super(client);
+        super(client, "homepage.vm", "/infocalypse/");
     }
 
     @Override
-    public String path() {
-        return PATH;
-    }
+    String render(VelocityContext context) {
+        context.put("greetings", new String[] { "Hello", "Hi", "Howdy", "How'da do", "What's up", "How's it hanging"});
 
-    public void handleMethodGET(URI uri, HTTPRequest request, ToadletContext ctx) throws
-            ToadletContextClosedException, IOException {
-        writeReply(ctx, 200, "text/plain", "OK", "Whazza!");
-    }
+        StringWriter writer = new StringWriter();
+        Velocity.mergeTemplate(getTemplate(), InfocalypsePlugin.encoding, context, writer);
 
-    @Override
-    public boolean isEnabled(ToadletContext ctx) {
-        return true;
+        return writer.toString();
     }
 }

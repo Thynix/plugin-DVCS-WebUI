@@ -1,0 +1,5 @@
+<ul>
+#foreach( $greeting in $greetings )
+    <li>$greeting</li>
+#end
+</ul>
