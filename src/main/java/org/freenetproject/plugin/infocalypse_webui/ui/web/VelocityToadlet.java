@@ -9,9 +9,10 @@ import freenet.clients.http.ToadletContextClosedException;
 import freenet.support.api.HTTPRequest;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.freenetproject.plugin.infocalypse_webui.main.InfocalypsePlugin;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.Properties;
 
@@ -55,8 +56,13 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
             context.put(key, request.getParam(key));
         }
 
+        updateContext(context);
+
+        StringWriter writer = new StringWriter();
+        Velocity.mergeTemplate(getTemplate(), InfocalypsePlugin.encoding, context, writer);
+
         PageNode pageNode = ctx.getPageMaker().getPageNode("Infocalypse", ctx);
-        pageNode.content.addChild("%", render(context));
+        pageNode.content.addChild("%", writer.toString());
 
         writeReply(ctx, 200, "text/html", "OK", pageNode.outer.generate());
     }
@@ -68,5 +74,9 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
         return "/templates/" + templateName;
     }
 
-    abstract String render(VelocityContext context);
+    /**
+     * Puts additional variables, properties, and methods in the context as required.
+     * @param context context to modify
+     */
+    abstract void updateContext(VelocityContext context);
 }
