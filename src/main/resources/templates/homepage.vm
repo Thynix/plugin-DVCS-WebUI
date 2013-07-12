@@ -1,3 +1,4 @@
+<h1>$t.get("Welcome")</h1>
 <ul>
 #foreach( $greeting in $greetings )
     <li>$greeting</li>

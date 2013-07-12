@@ -2,14 +2,15 @@ package org.freenetproject.plugin.infocalypse_webui.ui.web;
 
 import freenet.client.HighLevelSimpleClient;
 import org.apache.velocity.VelocityContext;
+import org.freenetproject.plugin.infocalypse_webui.main.InfocalypseL10n;
 
 /**
  * Plugin homepage / dashboard.
  */
 public class Homepage extends VelocityToadlet {
 
-    public Homepage(HighLevelSimpleClient client) {
-        super(client, "homepage.vm", "/infocalypse/");
+    public Homepage(HighLevelSimpleClient client, InfocalypseL10n l10n) {
+        super(client, l10n, "homepage.vm", "/infocalypse/", "Infocalypse.Menu");
     }
 
     @Override

@@ -9,6 +9,7 @@ import freenet.clients.http.ToadletContextClosedException;
 import freenet.support.api.HTTPRequest;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
+import org.freenetproject.plugin.infocalypse_webui.main.InfocalypseL10n;
 import org.freenetproject.plugin.infocalypse_webui.main.InfocalypsePlugin;
 
 import java.io.IOException;
@@ -23,11 +24,24 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 
     private final String path;
     private final String templateName;
+    private final String title;
+    private final InfocalypseL10n l10n;
 
-    public VelocityToadlet(HighLevelSimpleClient client, String templateName, String path) {
+    /**
+     *
+     * @param client required by Toadlet.
+     * @param l10n used to localize page and title.
+     * @param templateName template filename to use.
+     * @param path path to register to.
+     * @param title page title localization key.
+     */
+    public VelocityToadlet(HighLevelSimpleClient client, InfocalypseL10n l10n, String templateName, String path,
+                           String title) {
         super(client);
+        this.l10n = l10n;
         this.path = path;
         this.templateName = templateName;
+        this.title = l10n.get(title);
 
         // Templates are stored in jars on the classpath.
         Properties properties = new Properties();
@@ -55,6 +69,8 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
         for (String key : request.getParameterNames()) {
             context.put(key, request.getParam(key));
         }
+
+        context.put("t", l10n);
 
         updateContext(context);
 

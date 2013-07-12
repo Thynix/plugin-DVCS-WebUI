@@ -20,6 +20,13 @@ public class InfocalypseL10n implements FredPluginBaseL10n, FredPluginL10n {
         return l10n.getBase().getString(s);
     }
 
+    /**
+     * Shorter version of getString() for template use.
+     */
+    public String get(String s) {
+        return getString(s);
+    }
+
     @Override
     public void setLanguage(BaseL10n.LANGUAGE language) {
         l10n = new PluginL10n(this, language);

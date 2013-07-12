@@ -31,8 +31,8 @@ public class InfocalypsePlugin implements FredPlugin, FredPluginThreadless, Fred
         pluginRespirator = pr;
         tc = pluginRespirator.getToadletContainer();
 
-        FredPluginL10n l10n = new InfocalypseL10n();
-        homepage = new Homepage(pr.getHLSimpleClient());
+        InfocalypseL10n l10n = new InfocalypseL10n();
+        homepage = new Homepage(pr.getHLSimpleClient(), l10n);
 
         pluginRespirator.getPageMaker().addNavigationCategory(homepage.path(), menuName, menuName, l10n);
         tc.register(homepage, menuName, homepage.path(), true, menuName, menuName, false, homepage);
