@@ -18,7 +18,8 @@ public class InfocalypsePlugin implements FredPlugin, FredPluginThreadless, Fred
 
     private Homepage homepage;
 
-    private final String menuName = "Infocalypse.Menu";
+    private static final String menuName = "Infocalypse.Menu";
+
     public static final String encoding = "UTF-8";
 
     public String getVersion() {
