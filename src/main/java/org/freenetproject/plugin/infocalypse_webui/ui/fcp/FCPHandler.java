@@ -30,7 +30,7 @@ public class FCPHandler implements FredPluginFCP {
      */
 
     /**
-     * Milliseonds before an FCP connection to Infocalypse is considered timed out.
+     * Milliseconds before an FCP connection to Infocalypse is considered timed out.
      */
     public static final long fcpTimeout = 5000;
 
