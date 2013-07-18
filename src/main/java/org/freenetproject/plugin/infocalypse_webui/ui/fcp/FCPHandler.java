@@ -37,19 +37,6 @@ public class FCPHandler implements FredPluginFCP {
     private String connectedIdentifier;
     private final Timer timeout;
 
-    // TODO: Would it make more sense for this to be inline?
-    private class Timeout extends TimerTask {
-
-        @Override
-        public void run() {
-            // TODO: I don't understand locking well. Is synchronizing on the Timer from a task run by it problematic?
-            synchronized (timeout) {
-                System.err.println("Session '" + connectedIdentifier +"' timed out.");
-                connectedIdentifier = null;
-            }
-        }
-    }
-
     public FCPHandler() {
         // Timer is a daemon - if shutting down there's no need to continue tracking a timeout.
         timeout = new Timer(true);
@@ -80,7 +67,15 @@ public class FCPHandler implements FredPluginFCP {
                 timeout.cancel();
             }
 
-            timeout.schedule(new Timeout(), fcpTimeout);
+            timeout.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    synchronized (timeout) {
+                        System.err.println("Session '" + connectedIdentifier +"' timed out.");
+                        connectedIdentifier = null;
+                    }
+                }
+            }, fcpTimeout);
         }
 
         SimpleFieldSet sfs = new SimpleFieldSet(true);
