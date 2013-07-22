@@ -53,8 +53,7 @@ public class FCPHandler implements FredPluginFCP {
                 // A different identifier is already connected.
                 SimpleFieldSet sfs = new SimpleFieldSet(true);
                 sfs.putOverwrite("Message", "Error");
-                sfs.putOverwrite("Description", "An Infocalypse session is already connected: " + replysender
-                        .getIdentifier());
+                sfs.putOverwrite("Description", "An Infocalypse session is already connected: " + connectedIdentifier);
                 try {
                     replysender.send(sfs);
                 } catch (PluginNotFoundException e) {
