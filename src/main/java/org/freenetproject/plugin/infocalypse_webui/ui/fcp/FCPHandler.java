@@ -6,8 +6,9 @@ import freenet.pluginmanager.PluginReplySender;
 import freenet.support.SimpleFieldSet;
 import freenet.support.api.Bucket;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tracks session state and dispatches messages to specific handlers.
@@ -30,22 +31,22 @@ public class FCPHandler implements FredPluginFCP {
      */
 
     /**
-     * Milliseconds before an FCP connection to Infocalypse is considered timed out.
+     * Seconds before an FCP connection to Infocalypse is considered timed out.
      */
-    public static final long fcpTimeout = 5000;
+    public static final long fcpTimeout = 5;
 
     private String connectedIdentifier;
-    private final Timer timeout;
+    private final ScheduledThreadPoolExecutor executor;
+    private ScheduledFuture future;
 
     public FCPHandler() {
-        // Timer is a daemon - if shutting down there's no need to continue tracking a timeout.
-        timeout = new Timer(true);
+        executor = new ScheduledThreadPoolExecutor(1);
     }
 
     @Override
     public void handle(PluginReplySender replysender, SimpleFieldSet params, Bucket data, int accesstype) {
         // TODO: What to do with accesstype?
-        synchronized (timeout) {
+        synchronized (executor) {
             if (connectedIdentifier == null) {
                 connectedIdentifier = replysender.getIdentifier();
             } else if (!connectedIdentifier.equals(replysender.getIdentifier())) {
@@ -64,18 +65,19 @@ public class FCPHandler implements FredPluginFCP {
             } else {
                 // This identifier was already connected.
                 assert connectedIdentifier.equals(replysender.getIdentifier());
-                timeout.cancel();
+                // In order to be connected the timeout should already be scheduled.
+                assert future != null;
+                future.cancel(false);
             }
 
-            timeout.schedule(new TimerTask() {
+            future = executor.schedule(new Runnable() {
                 @Override
                 public void run() {
-                    synchronized (timeout) {
-                        System.err.println("Session '" + connectedIdentifier +"' timed out.");
+                    synchronized (executor) {
                         connectedIdentifier = null;
                     }
                 }
-            }, fcpTimeout);
+            }, 5, TimeUnit.SECONDS);
         }
 
         SimpleFieldSet sfs = new SimpleFieldSet(true);
@@ -92,7 +94,7 @@ public class FCPHandler implements FredPluginFCP {
      * @return true if a session is connected and has not timed out; false otherwise.
      */
     public boolean isConnected() {
-        synchronized (timeout) {
+        synchronized (executor) {
             return connectedIdentifier != null;
         }
     }
