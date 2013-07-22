@@ -76,7 +76,7 @@ public class FCPHandler implements FredPluginFCP {
                         connectedIdentifier = null;
                     }
                 }
-            }, 5, TimeUnit.SECONDS);
+            }, fcpTimeout, TimeUnit.SECONDS);
         }
 
         SimpleFieldSet sfs = new SimpleFieldSet(true);
