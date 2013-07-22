@@ -79,10 +79,16 @@ public class FCPHandler implements FredPluginFCP {
             }, fcpTimeout, TimeUnit.SECONDS);
         }
 
-        SimpleFieldSet sfs = new SimpleFieldSet(true);
-        sfs.putOverwrite("Message", "Pong");
+        final String messageName = params.get("Message");
+        final MessageHandler handler;
+        if ("Ping".equals(messageName)) {
+            handler = new Ping();
+        } else {
+            handler = new Unknown();
+        }
+
         try {
-            replysender.send(sfs);
+            replysender.send(handler.reply(params));
         } catch (PluginNotFoundException e) {
             // TODO: Copy and paste from above. Wrapper, rearrange control flow, or just put up with it?
             System.err.println("Cannot find plugin / connection closed: " + e);
