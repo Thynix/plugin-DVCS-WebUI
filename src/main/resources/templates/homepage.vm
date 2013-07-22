@@ -4,3 +4,10 @@
     <li>$greeting</li>
 #end
 </ul>
+<h2>
+#if ( $connected )
+    $t.get("Connected")
+#else
+    $t.get("Disconnected")
+#end
+</h2>
