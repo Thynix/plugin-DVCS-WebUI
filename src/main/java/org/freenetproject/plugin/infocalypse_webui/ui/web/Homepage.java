@@ -20,6 +20,6 @@ public class Homepage extends VelocityToadlet {
     @Override
     void updateContext(VelocityContext context) {
         context.put("greetings", new String[] { "Hello", "Hi", "Howdy", "How'da do", "What's up", "How's it hanging"});
-        context.put("connected", fcpHandler.isConnected());
+        context.put("identifier", fcpHandler.getConnectedIdentifier());
     }
 }

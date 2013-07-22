@@ -96,11 +96,11 @@ public class FCPHandler implements FredPluginFCP {
     }
 
     /**
-     * @return true if a session is connected and has not timed out; false otherwise.
+     * @return the identifier of the connected session, or null if no session is connected.
      */
-    public boolean isConnected() {
+    public String getConnectedIdentifier() {
         synchronized (executor) {
-            return connectedIdentifier != null;
+            return connectedIdentifier;
         }
     }
 }
