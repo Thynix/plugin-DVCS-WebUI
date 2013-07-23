@@ -3,7 +3,7 @@ package org.freenetproject.plugin.infocalypse_webui.ui.fcp;
 import freenet.support.SimpleFieldSet;
 
 /**
- * Responds to a Ping.
+ * Replies to a Ping with a Pong.
  */
 public class Ping implements  MessageHandler {
     @Override
