@@ -44,18 +44,18 @@ public class FCPHandler implements FredPluginFCP {
     }
 
     @Override
-    public void handle(PluginReplySender replysender, SimpleFieldSet params, Bucket data, int accesstype) {
-        // TODO: What to do with accesstype?
+    public void handle(PluginReplySender replySender, SimpleFieldSet params, Bucket data, int accessType) {
+        // TODO: What to do with accessType?
         synchronized (executor) {
             if (connectedIdentifier == null) {
-                connectedIdentifier = replysender.getIdentifier();
-            } else if (!connectedIdentifier.equals(replysender.getIdentifier())) {
+                connectedIdentifier = replySender.getIdentifier();
+            } else if (!connectedIdentifier.equals(replySender.getIdentifier())) {
                 // A different identifier is already connected.
                 SimpleFieldSet sfs = new SimpleFieldSet(true);
                 sfs.putOverwrite("Message", "Error");
                 sfs.putOverwrite("Description", "An Infocalypse session is already connected: " + connectedIdentifier);
                 try {
-                    replysender.send(sfs);
+                    replySender.send(sfs);
                 } catch (PluginNotFoundException e) {
                     // TODO: Lazy error handling. Look into real logging.
                     System.err.println("Cannot find plugin / connection closed: " + e);
@@ -63,7 +63,7 @@ public class FCPHandler implements FredPluginFCP {
                 return;
             } else {
                 // This identifier was already connected.
-                assert connectedIdentifier.equals(replysender.getIdentifier());
+                assert connectedIdentifier.equals(replySender.getIdentifier());
                 // In order to be connected the timeout should already be scheduled.
                 assert future != null;
                 future.cancel(false);
@@ -88,7 +88,7 @@ public class FCPHandler implements FredPluginFCP {
         }
 
         try {
-            replysender.send(handler.reply(params));
+            replySender.send(handler.reply(params));
         } catch (PluginNotFoundException e) {
             // TODO: Copy and paste from above. Wrapper, rearrange control flow, or just put up with it?
             System.err.println("Cannot find plugin / connection closed: " + e);
