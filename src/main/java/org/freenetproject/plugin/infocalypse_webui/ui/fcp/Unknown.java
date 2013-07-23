@@ -11,7 +11,7 @@ public class Unknown implements MessageHandler {
     public SimpleFieldSet reply(SimpleFieldSet params) {
         SimpleFieldSet sfs = new SimpleFieldSet(true);
         sfs.putOverwrite("Message", "Error");
-        sfs.putOverwrite("Description", "Unrecognized message type.");
+        sfs.putOverwrite("Description", "Unrecognized message type '" + params.get("Message") + "'.");
         return sfs;
     }
 }
