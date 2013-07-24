@@ -6,12 +6,17 @@ import freenet.pluginmanager.PluginReplySender;
 import freenet.support.SimpleFieldSet;
 import freenet.support.api.Bucket;
 
+import java.util.ArrayDeque;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Tracks session state and dispatches messages to specific handlers.
+ *
+ * The UI event code is currently handles a single event at a time, and treats more than one simultaneous ClearToSend
+ * as an error. This is simpler to get things started, but is likely to be slow. Asynchronous code is a good place to
+ * look for initial performance improvements.
  */
 public class FCPHandler implements FredPluginFCP {
 
@@ -39,8 +44,16 @@ public class FCPHandler implements FredPluginFCP {
     private final ScheduledThreadPoolExecutor executor;
     private ScheduledFuture future;
 
+    /**
+     * SequenceID from the active ClearToSend. Matched with response.
+     */
+    private String sequenceID;
+    private final ArrayDeque<InfocalypseQuery> queries;
+
     public FCPHandler() {
         executor = new ScheduledThreadPoolExecutor(1);
+        queries = new ArrayDeque<InfocalypseQuery>();
+        sequenceID = null;
     }
 
     @Override
@@ -79,12 +92,36 @@ public class FCPHandler implements FredPluginFCP {
             }, fcpTimeout, TimeUnit.SECONDS);
         }
 
+        // TODO: The message type handler needs information on whether the message was successfully sent.
+        // TODO: Perhaps run-time class lookup instead of if-else blocks? It might also be faster / more flexible to
+        // put already-constructed instances into a HashMap. That might be too much like Python.
+        // TODO: The flow of this is really messy.
         final String messageName = params.get("Message");
         final MessageHandler handler;
         if ("Ping".equals(messageName)) {
             handler = new Ping();
+        } else if ("ClearToSend".equals(messageName)) {
+            synchronized (queries) {
+                // TODO: Shuffling off something that deals so much with state in here seems odd.
+                if (sequenceID == null) {
+                    sequenceID = params.get("SequenceID");
+                    handler = new ClearToSend(this);
+                } else {
+                    handler = new Overload();
+                }
+            }
         } else {
-            handler = new Unknown();
+            // TODO: Where is a better place to handle query responses?
+            // Might be a query response.
+            synchronized (queries) {
+                if (sequenceID.equals(params.get("SequenceID")) && !queries.isEmpty()) {
+                    handler = queries.removeFirst().handler;
+                    // Can now accept another ClearToSend.
+                    sequenceID = null;
+                } else {
+                    handler = new Unknown();
+                }
+            }
         }
 
         try {
@@ -101,6 +138,23 @@ public class FCPHandler implements FredPluginFCP {
     public String getConnectedIdentifier() {
         synchronized (executor) {
             return connectedIdentifier;
+        }
+    }
+
+    public void pushQuery(InfocalypseQuery query) {
+        synchronized (queries) {
+            queries.addLast(query);
+            // ClearToSend might be waiting.
+            notifyAll();
+        }
+    }
+
+    /**
+     * @return the next query in the queue, or null if the queue is empty.
+     */
+    InfocalypseQuery peekQuery() {
+        synchronized (queries) {
+            return queries.peekFirst();
         }
     }
 }
