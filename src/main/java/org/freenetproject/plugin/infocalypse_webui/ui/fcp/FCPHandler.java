@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tracks session state and dispatches messages to specific handlers.
  *
- * The UI event code is currently handles a single event at a time, and treats more than one simultaneous ClearToSend
+ * The UI event code currently handles a single event at a time, and treats more than one simultaneous ClearToSend
  * as an error. This is simpler to get things started, but is likely to be slow. Asynchronous code is a good place to
  * look for initial performance improvements.
  */
