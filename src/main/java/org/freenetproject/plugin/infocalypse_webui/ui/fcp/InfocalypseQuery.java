@@ -9,8 +9,8 @@ public class InfocalypseQuery {
     public final SimpleFieldSet query;
     public final InfocalypseResponseHandler handler;
 
-    public InfocalypseQuery(SimpleFieldSet sfs, InfocalypseResponseHandler infocalypseResponseHandler) {
+    public InfocalypseQuery(SimpleFieldSet sfs, InfocalypseResponseHandler responseHandler) {
         this.query = sfs;
-        this.handler = infocalypseResponseHandler;
+        this.handler = responseHandler;
     }
 }
