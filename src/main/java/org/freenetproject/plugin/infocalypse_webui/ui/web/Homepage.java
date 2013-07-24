@@ -32,7 +32,7 @@ public class Homepage extends VelocityToadlet {
         repoPaths = new ArrayList<String>();
         executor = new ScheduledThreadPoolExecutor(1);
         // Query local repo information immediately and every 5 seconds thereafter.
-        executor.scheduleAtFixedRate(new RepoListQuery(), 0, 5, TimeUnit.SECONDS);
+        executor.scheduleWithFixedDelay(new RepoListQuery(), 0, 5, TimeUnit.SECONDS);
     }
 
     @Override
