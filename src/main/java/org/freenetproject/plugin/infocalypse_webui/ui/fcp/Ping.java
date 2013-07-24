@@ -5,7 +5,7 @@ import freenet.support.SimpleFieldSet;
 /**
  * Replies to a Ping with a Pong.
  */
-public class Ping implements  MessageHandler {
+public class Ping implements MessageHandler {
     @Override
     public SimpleFieldSet reply(SimpleFieldSet params) {
         SimpleFieldSet sfs = new SimpleFieldSet(true);
