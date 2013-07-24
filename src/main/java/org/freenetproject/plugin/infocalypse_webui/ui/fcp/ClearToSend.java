@@ -23,7 +23,7 @@ public class ClearToSend implements MessageHandler {
         fcpHandler = fcp;
     }
 
-    @Override
+    @Override /* queries to infocalypse are actually replies to ClearToSend */ 
     public SimpleFieldSet reply(SimpleFieldSet params) {
         InfocalypseQuery query;
         while ( (query = fcpHandler.peekQuery()) == null) {
