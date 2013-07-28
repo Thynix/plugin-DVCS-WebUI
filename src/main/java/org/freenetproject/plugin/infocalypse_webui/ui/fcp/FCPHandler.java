@@ -103,6 +103,8 @@ public class FCPHandler implements FredPluginFCP {
         } else if ("ClearToSend".equals(messageName)) {
             synchronized (queries) {
                 // TODO: Shuffling off something that deals so much with state in here seems odd.
+                // TODO: Move sequenceID handling somewhere else, even if it's just registration methods called from
+                // ClearToSend() handlers.
                 if (sequenceID == null) {
                     sequenceID = params.get("SequenceID");
                     handler = new ClearToSend(this);

@@ -59,6 +59,8 @@ public class Homepage extends VelocityToadlet {
         public void run() {
             System.err.println("Querying local repos.");
             fcpHandler.pushQuery(new InfocalypseQuery(sfs, handler));
+            // TODO: Never reached - pushQuery() doesn't return, so only one query ever sent.
+            System.err.println("Query queued.");
         }
     }
 
