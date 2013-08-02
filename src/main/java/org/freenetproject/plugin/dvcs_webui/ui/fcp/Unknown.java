@@ -7,11 +7,11 @@ import freenet.support.SimpleFieldSet;
  */
 public class Unknown implements MessageHandler {
 
-    @Override
-    public SimpleFieldSet reply(SimpleFieldSet params) {
-        SimpleFieldSet sfs = new SimpleFieldSet(true);
-        sfs.putOverwrite("Message", "Error");
-        sfs.putOverwrite("Description", "Unrecognized message type '" + params.get("Message") + "'.");
-        return sfs;
-    }
+	@Override
+	public SimpleFieldSet reply(SimpleFieldSet params) {
+		SimpleFieldSet sfs = new SimpleFieldSet(true);
+		sfs.putOverwrite("Message", "Error");
+		sfs.putOverwrite("Description", "Unrecognized message type '" + params.get("Message") + "'.");
+		return sfs;
+	}
 }

@@ -17,22 +17,22 @@ public class ClearToSend implements MessageHandler {
      * * SetRepoDir
      */
 
-    private final FCPHandler fcpHandler;
+	private final FCPHandler fcpHandler;
 
-    public ClearToSend(FCPHandler fcp) {
-        fcpHandler = fcp;
-    }
+	public ClearToSend(FCPHandler fcp) {
+		fcpHandler = fcp;
+	}
 
-    @Override /* queries to infocalypse are actually replies to ClearToSend */ 
-    public SimpleFieldSet reply(SimpleFieldSet params) {
-        InfocalypseQuery query;
-        while ( (query = fcpHandler.peekQuery()) == null) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                // Time to check again.
-            }
-        }
-        return query.query;
-    }
+	@Override /* queries to infocalypse are actually replies to ClearToSend */
+	public SimpleFieldSet reply(SimpleFieldSet params) {
+		InfocalypseQuery query;
+		while ((query = fcpHandler.peekQuery()) == null) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// Time to check again.
+			}
+		}
+		return query.query;
+	}
 }
