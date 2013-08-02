@@ -48,7 +48,7 @@
                     </archiverConfig>
                     <archive>
                         <manifestEntries>
-                            <Plugin-Main-Class>org.freenetproject.plugin.infocalypse_webui.main.InfocalypsePlugin</Plugin-Main-Class>
+                            <Plugin-Main-Class>org.freenetproject.plugin.dvcs_webui.main.Plugin</Plugin-Main-Class>
                         </manifestEntries>
                     </archive>
                 </configuration>

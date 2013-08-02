@@ -1,4 +1,4 @@
-package org.freenetproject.plugin.infocalypse_webui.ui.web;
+package org.freenetproject.plugin.dvcs_webui.ui.web;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.clients.http.LinkEnabledCallback;
@@ -9,8 +9,8 @@ import freenet.clients.http.ToadletContextClosedException;
 import freenet.support.api.HTTPRequest;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.freenetproject.plugin.infocalypse_webui.main.InfocalypseL10n;
-import org.freenetproject.plugin.infocalypse_webui.main.InfocalypsePlugin;
+import org.freenetproject.plugin.dvcs_webui.main.InfocalypseL10n;
+import org.freenetproject.plugin.dvcs_webui.main.Plugin;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -75,7 +75,7 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
         updateContext(context);
 
         StringWriter writer = new StringWriter();
-        Velocity.mergeTemplate(getTemplate(), InfocalypsePlugin.encoding, context, writer);
+        Velocity.mergeTemplate(getTemplate(), Plugin.encoding, context, writer);
 
         PageNode pageNode = ctx.getPageMaker().getPageNode("Infocalypse", ctx);
         pageNode.content.addChild("%", writer.toString());

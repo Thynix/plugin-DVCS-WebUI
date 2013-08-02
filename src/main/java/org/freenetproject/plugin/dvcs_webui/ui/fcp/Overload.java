@@ -1,4 +1,4 @@
-package org.freenetproject.plugin.infocalypse_webui.ui.fcp;
+package org.freenetproject.plugin.dvcs_webui.ui.fcp;
 
 import freenet.support.SimpleFieldSet;
 

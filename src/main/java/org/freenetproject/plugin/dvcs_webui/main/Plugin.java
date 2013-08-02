@@ -1,4 +1,4 @@
-package org.freenetproject.plugin.infocalypse_webui.main;
+package org.freenetproject.plugin.dvcs_webui.main;
 
 import freenet.clients.http.ToadletContainer;
 import freenet.pluginmanager.FredPlugin;
@@ -9,14 +9,14 @@ import freenet.pluginmanager.PluginReplySender;
 import freenet.pluginmanager.PluginRespirator;
 import freenet.support.SimpleFieldSet;
 import freenet.support.api.Bucket;
-import org.freenetproject.plugin.infocalypse_webui.ui.fcp.FCPHandler;
-import org.freenetproject.plugin.infocalypse_webui.ui.web.Homepage;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.FCPHandler;
+import org.freenetproject.plugin.dvcs_webui.ui.web.Homepage;
 
 /**
  * Registers the plugin with the Freenet node: pages and for FCP.
  * TODO: Is there no way to have only a different class implement FredPluginFCP, or must it be this one?
  */
-public class InfocalypsePlugin implements FredPlugin, FredPluginThreadless, FredPluginVersioned, FredPluginFCP {
+public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersioned, FredPluginFCP {
 
     private PluginRespirator pluginRespirator;
     private ToadletContainer tc;

@@ -1,4 +1,4 @@
-package org.freenetproject.plugin.infocalypse_webui.main;
+package org.freenetproject.plugin.dvcs_webui.main;
 
 import freenet.l10n.BaseL10n;
 import freenet.l10n.PluginL10n;
@@ -49,6 +49,6 @@ public class InfocalypseL10n implements FredPluginBaseL10n, FredPluginL10n {
 
     @Override
     public ClassLoader getPluginClassLoader() {
-        return InfocalypsePlugin.class.getClassLoader();
+        return Plugin.class.getClassLoader();
     }
 }

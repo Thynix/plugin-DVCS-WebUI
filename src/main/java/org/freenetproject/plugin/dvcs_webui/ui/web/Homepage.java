@@ -1,14 +1,13 @@
-package org.freenetproject.plugin.infocalypse_webui.ui.web;
+package org.freenetproject.plugin.dvcs_webui.ui.web;
 
 import freenet.client.HighLevelSimpleClient;
 import freenet.support.SimpleFieldSet;
 import org.apache.velocity.VelocityContext;
-import org.freenetproject.plugin.infocalypse_webui.main.InfocalypseL10n;
-import org.freenetproject.plugin.infocalypse_webui.ui.fcp.FCPHandler;
-import org.freenetproject.plugin.infocalypse_webui.ui.fcp.InfocalypseQuery;
-import org.freenetproject.plugin.infocalypse_webui.ui.fcp.InfocalypseResponseHandler;
+import org.freenetproject.plugin.dvcs_webui.main.InfocalypseL10n;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.FCPHandler;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.InfocalypseQuery;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.InfocalypseResponseHandler;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
