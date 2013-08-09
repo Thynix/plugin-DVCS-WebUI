@@ -9,6 +9,7 @@ import freenet.support.api.Bucket;
 import java.util.ArrayDeque;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,94 +43,38 @@ public class FCPHandler implements FredPluginFCP {
 
 	private String connectedIdentifier;
 	private final ScheduledThreadPoolExecutor executor;
-	private ScheduledFuture future;
 
-	/**
-	 * SequenceID from the active ClearToSend. Matched with response.
-	 */
-	private String sequenceID;
+	// TODO: Timeout or Disconnect releases.
+	private final Semaphore connected;
+	// TODO: Replace with BlockingQueue. Where best to put it?
+	// http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/BlockingQueue.html
 	private final ArrayDeque<InfocalypseQuery> queries;
 
 	public FCPHandler() {
 		executor = new ScheduledThreadPoolExecutor(1);
 		queries = new ArrayDeque<InfocalypseQuery>();
-		sequenceID = null;
+		connected = new Semaphore(1);
 	}
 
 	@Override
 	public void handle(PluginReplySender replySender, SimpleFieldSet params, Bucket data, int accessType) {
 		// TODO: What to do with accessType?
-		synchronized (executor) {
-			if (connectedIdentifier == null) {
-				connectedIdentifier = replySender.getIdentifier();
-			} else if (!connectedIdentifier.equals(replySender.getIdentifier())) {
-				// A different identifier is already connected.
-				SimpleFieldSet sfs = new SimpleFieldSet(true);
-				sfs.putOverwrite("Message", "Error");
-				sfs.putOverwrite("Description", "An Infocalypse session is already connected: " + connectedIdentifier);
-				try {
-					replySender.send(sfs);
-				} catch (PluginNotFoundException e) {
-					// TODO: Lazy error handling. Look into real logging.
-					System.err.println("Cannot find plugin / connection closed: " + e);
-				}
-				return;
+		// TODO: Switching on strings would be nice given Java 7 or up. Also consider a map of pre-constructed handler
+		// classes or reflection like LCWoT's FCP interface.
+		// TODO: Will the flow resulting from having the response out here be desirable?
+		SimpleFieldSet response = new SimpleFieldSet(true);
+		if (params.get("Message").equals("Hello")) {
+			if (connected.tryAcquire()) {
+				// TODO: Check supported queries. Probably should be an error if not enough are supported?
+				response.putOverwrite("Message", "HiThere");
 			} else {
-				// This identifier was already connected.
-				assert connectedIdentifier.equals(replySender.getIdentifier());
-				// In order to be connected the timeout should already be scheduled.
-				assert future != null;
-				future.cancel(false);
-			}
-
-			future = executor.schedule(new Runnable() {
-				@Override
-				public void run() {
-					synchronized (executor) {
-						connectedIdentifier = null;
-					}
-				}
-			}, fcpTimeout, TimeUnit.SECONDS);
-		}
-
-		// TODO: The message type handler needs information on whether the message was successfully sent.
-		// TODO: Perhaps run-time class lookup instead of if-else blocks? It might also be faster / more flexible to
-		// put already-constructed instances into a HashMap. That might be too much like Python.
-		// TODO: The flow of this is really messy.
-		final String messageName = params.get("Message");
-		final MessageHandler handler;
-		if ("Ping".equals(messageName)) {
-			handler = new Ping();
-		} else if ("ClearToSend".equals(messageName)) {
-			synchronized (queries) {
-				// TODO: Shuffling off something that deals so much with state in here seems odd.
-				// TODO: Move sequenceID handling somewhere else, even if it's just registration methods called from
-				// ClearToSend() handlers.
-				if (sequenceID == null) {
-					sequenceID = params.get("SequenceID");
-					handler = new ClearToSend(this);
-				} else {
-					handler = new Overload();
-				}
-			}
-		} else {
-			// TODO: Where is a better place to handle query responses?
-			// Might be a query response.
-			synchronized (queries) {
-				if (sequenceID.equals(params.get("SequenceID")) && !queries.isEmpty()) {
-					handler = queries.removeFirst().handler;
-					// Can now accept another ClearToSend.
-					sequenceID = null;
-				} else {
-					handler = new Unknown();
-				}
+				response.putOverwrite("Message", "Error");
+				response.putOverwrite("Description", "Another DVCS is already connected.");
 			}
 		}
-
 		try {
-			replySender.send(handler.reply(params));
+			replySender.send(response);
 		} catch (PluginNotFoundException e) {
-			// TODO: Copy and paste from above. Wrapper, rearrange control flow, or just put up with it?
 			System.err.println("Cannot find plugin / connection closed: " + e);
 		}
 	}
