@@ -5,6 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.freenetproject</groupId>
+    <!-- TODO: Update artifactID to include "DVCS". -->
     <artifactId>plugin-Infocalypse-WebUI</artifactId>
     <version>0.1-SNAPSHOT</version>
     <packaging>jar</packaging>

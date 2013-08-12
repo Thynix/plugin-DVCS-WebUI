@@ -9,7 +9,7 @@ import freenet.clients.http.ToadletContextClosedException;
 import freenet.support.api.HTTPRequest;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.freenetproject.plugin.dvcs_webui.main.InfocalypseL10n;
+import org.freenetproject.plugin.dvcs_webui.main.L10n;
 import org.freenetproject.plugin.dvcs_webui.main.Plugin;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 	private final String path;
 	private final String templateName;
 	private final String title;
-	private final InfocalypseL10n l10n;
+	private final L10n l10n;
 
 	/**
 	 * @param client       required by Toadlet.
@@ -34,7 +34,7 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 	 * @param path         path to register to.
 	 * @param title        page title localization key.
 	 */
-	public VelocityToadlet(HighLevelSimpleClient client, InfocalypseL10n l10n, String templateName, String path,
+	public VelocityToadlet(HighLevelSimpleClient client, L10n l10n, String templateName, String path,
 	                       String title) {
 		super(client);
 		this.l10n = l10n;

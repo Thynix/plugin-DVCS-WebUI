@@ -8,10 +8,10 @@ import freenet.pluginmanager.FredPluginL10n;
 /**
  * Provides Fred plugin localization.
  */
-public class InfocalypseL10n implements FredPluginBaseL10n, FredPluginL10n {
+public class L10n implements FredPluginBaseL10n, FredPluginL10n {
 	private PluginL10n l10n;
 
-	public InfocalypseL10n() {
+	public L10n() {
 		l10n = new PluginL10n(this);
 	}
 

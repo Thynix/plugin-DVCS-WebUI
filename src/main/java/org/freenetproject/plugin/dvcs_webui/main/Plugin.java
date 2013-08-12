@@ -37,8 +37,8 @@ public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersi
 		pluginRespirator = pr;
 		tc = pluginRespirator.getToadletContainer();
 
-		InfocalypseL10n l10n = new InfocalypseL10n();
-		fcpHandler = new FCPHandler();
+		L10n l10n = new L10n();
+		fcpHandler = new FCPHandler(pr.getNode().random);
 		homepage = new Homepage(pr.getHLSimpleClient(), l10n, fcpHandler);
 
 		pluginRespirator.getPageMaker().addNavigationCategory(homepage.path(), menuName, menuName, l10n);
