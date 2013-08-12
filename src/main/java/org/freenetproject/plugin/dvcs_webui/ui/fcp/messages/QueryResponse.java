@@ -1,11 +1,11 @@
-package org.freenetproject.plugin.dvcs_webui.ui.fcp;
+package org.freenetproject.plugin.dvcs_webui.ui.fcp.messages;
 
 import freenet.support.SimpleFieldSet;
 
 /**
  * Replies to a to a query response from Infocalypse with an ACK with matching SequenceID.
  */
-public abstract class InfocalypseResponseHandler implements MessageHandler {
+public abstract class QueryResponse implements MessageHandler {
 	@Override
 	public SimpleFieldSet reply(SimpleFieldSet params) {
 		SimpleFieldSet sfs = new SimpleFieldSet(true);

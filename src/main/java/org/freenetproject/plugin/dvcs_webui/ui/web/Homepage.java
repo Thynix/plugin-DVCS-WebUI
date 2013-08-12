@@ -6,7 +6,7 @@ import org.apache.velocity.VelocityContext;
 import org.freenetproject.plugin.dvcs_webui.main.InfocalypseL10n;
 import org.freenetproject.plugin.dvcs_webui.ui.fcp.FCPHandler;
 import org.freenetproject.plugin.dvcs_webui.ui.fcp.InfocalypseQuery;
-import org.freenetproject.plugin.dvcs_webui.ui.fcp.InfocalypseResponseHandler;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.QueryResponse;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,7 +46,7 @@ public class Homepage extends VelocityToadlet {
 
 	private class RepoListQuery implements Runnable {
 		private final SimpleFieldSet sfs;
-		private final InfocalypseResponseHandler handler;
+		private final QueryResponse handler;
 
 		public RepoListQuery() {
 			sfs = new SimpleFieldSet(false);
@@ -63,7 +63,7 @@ public class Homepage extends VelocityToadlet {
 		}
 	}
 
-	private class RepoListHandler extends InfocalypseResponseHandler {
+	private class RepoListHandler extends QueryResponse {
 
 		@Override
 		public SimpleFieldSet handle(SimpleFieldSet params) {

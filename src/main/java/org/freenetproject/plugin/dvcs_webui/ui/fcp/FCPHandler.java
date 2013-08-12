@@ -5,9 +5,15 @@ import freenet.pluginmanager.PluginNotFoundException;
 import freenet.pluginmanager.PluginReplySender;
 import freenet.support.SimpleFieldSet;
 import freenet.support.api.Bucket;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.messages.MessageHandler;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.messages.Ping;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.messages.Ready;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.messages.Unknown;
 
-import java.util.ArrayDeque;
-import java.util.concurrent.ScheduledFuture;
+import java.util.HashMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -41,19 +47,25 @@ public class FCPHandler implements FredPluginFCP {
 	 */
 	public static final long fcpTimeout = 5;
 
-	private String connectedIdentifier;
 	private final ScheduledThreadPoolExecutor executor;
+	private Future timeout;
 
 	// TODO: Timeout or Disconnect releases.
+	// TODO: How best to track session state?
 	private final Semaphore connected;
-	// TODO: Replace with BlockingQueue. Where best to put it?
-	// http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/BlockingQueue.html
-	private final ArrayDeque<InfocalypseQuery> queries;
+	// TODO: Is this an appropriate place to keep a query list?
+	private final BlockingQueue<InfocalypseQuery> queries;
+
+	private final HashMap<String, MessageHandler> handlers;
 
 	public FCPHandler() {
 		executor = new ScheduledThreadPoolExecutor(1);
-		queries = new ArrayDeque<InfocalypseQuery>();
+		queries = new LinkedBlockingQueue<InfocalypseQuery>();
 		connected = new Semaphore(1);
+
+		handlers = new HashMap<String, MessageHandler>();
+		handlers.put("Ping", new Ping());
+		handlers.put("Ready", new Ready(this));
 	}
 
 	@Override
@@ -62,16 +74,30 @@ public class FCPHandler implements FredPluginFCP {
 		// TODO: Switching on strings would be nice given Java 7 or up. Also consider a map of pre-constructed handler
 		// classes or reflection like LCWoT's FCP interface.
 		// TODO: Will the flow resulting from having the response out here be desirable?
+		final String message = params.get("Message");
 		SimpleFieldSet response = new SimpleFieldSet(true);
-		if (params.get("Message").equals("Hello")) {
+		if (message.equals("Hello")) {
 			if (connected.tryAcquire()) {
 				// TODO: Check supported queries. Probably should be an error if not enough are supported?
 				response.putOverwrite("Message", "HiThere");
+				startTimeout();
 			} else {
 				response.putOverwrite("Message", "Error");
 				response.putOverwrite("Description", "Another DVCS is already connected.");
 			}
+		} else {
+			// A message was received - restart the timeout.
+			timeout.cancel(true);
+			startTimeout();
+
+			// TODO: Is this appropriate for query replies, though? Sure, why not. Must sort out by identifier.
+			if (handlers.containsKey(message)) {
+				response = handlers.get(message).reply(params);
+			} else {
+				response = new Unknown().reply(params);
+			}
 		}
+
 		try {
 			replySender.send(response);
 		} catch (PluginNotFoundException e) {
@@ -79,29 +105,34 @@ public class FCPHandler implements FredPluginFCP {
 		}
 	}
 
-	/**
-	 * @return the identifier of the connected session, or null if no session is connected.
-	 */
-	public String getConnectedIdentifier() {
-		synchronized (executor) {
-			return connectedIdentifier;
-		}
+	private void startTimeout() {
+		timeout = executor.schedule(new Runnable() {
+			@Override
+			public void run() {
+				connected.release();
+			}
+		}, fcpTimeout, TimeUnit.SECONDS);
 	}
 
 	public void pushQuery(InfocalypseQuery query) {
-		synchronized (queries) {
-			queries.addLast(query);
-			// ClearToSend might be waiting.
-			notifyAll();
-		}
+		queries.add(query);
 	}
 
 	/**
-	 * @return the next query in the queue, or null if the queue is empty.
+	 * Block until there is something.
+	 * @return the next query in the queue.
 	 */
-	InfocalypseQuery peekQuery() {
-		synchronized (queries) {
-			return queries.peekFirst();
-		}
+	public InfocalypseQuery takeQuery() {
+		InfocalypseQuery query = null;
+
+		do {
+			try {
+				query = queries.take();
+			} catch (InterruptedException e) {
+			}
+			// Check because take() might have been interrupted.
+		} while (query == null);
+
+		return query;
 	}
 }

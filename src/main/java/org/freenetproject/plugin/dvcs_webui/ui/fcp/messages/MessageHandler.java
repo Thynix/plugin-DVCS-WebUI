@@ -1,4 +1,4 @@
-package org.freenetproject.plugin.dvcs_webui.ui.fcp;
+package org.freenetproject.plugin.dvcs_webui.ui.fcp.messages;
 
 import freenet.support.SimpleFieldSet;
 

@@ -1,11 +1,12 @@
-package org.freenetproject.plugin.dvcs_webui.ui.fcp;
+package org.freenetproject.plugin.dvcs_webui.ui.fcp.messages;
 
 import freenet.support.SimpleFieldSet;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.FCPHandler;
 
 /**
- * Replies to a ClearToSend with a UI event, once one occurs.
+ * Replies to a Ready with a UI event, once one occurs.
  */
-public class ClearToSend implements MessageHandler {
+public class Ready implements MessageHandler {
     /*
      * TODO: If the connection has been closed between the time this was received and the request was sent as a
      * response, how to avoid losing the request? This message may have to get feedback on whether the sending was
@@ -19,20 +20,12 @@ public class ClearToSend implements MessageHandler {
 
 	private final FCPHandler fcpHandler;
 
-	public ClearToSend(FCPHandler fcp) {
+	public Ready(FCPHandler fcp) {
 		fcpHandler = fcp;
 	}
 
-	@Override /* queries to infocalypse are actually replies to ClearToSend */
+	@Override /* Queries sent to the DVCS are actually replies to Ready. */
 	public SimpleFieldSet reply(SimpleFieldSet params) {
-		InfocalypseQuery query;
-		while ((query = fcpHandler.peekQuery()) == null) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				// Time to check again.
-			}
-		}
-		return query.query;
+		return fcpHandler.takeQuery().query;
 	}
 }
