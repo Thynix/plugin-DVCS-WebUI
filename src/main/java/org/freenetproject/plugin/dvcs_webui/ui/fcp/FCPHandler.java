@@ -1,5 +1,6 @@
 package org.freenetproject.plugin.dvcs_webui.ui.fcp;
 
+import freenet.crypt.RandomSource;
 import freenet.pluginmanager.FredPluginFCP;
 import freenet.pluginmanager.PluginNotFoundException;
 import freenet.pluginmanager.PluginReplySender;
@@ -7,9 +8,11 @@ import freenet.support.SimpleFieldSet;
 import freenet.support.api.Bucket;
 import org.freenetproject.plugin.dvcs_webui.ui.fcp.messages.MessageHandler;
 import org.freenetproject.plugin.dvcs_webui.ui.fcp.messages.Ping;
+import org.freenetproject.plugin.dvcs_webui.ui.fcp.messages.QueryResult;
 import org.freenetproject.plugin.dvcs_webui.ui.fcp.messages.Ready;
 import org.freenetproject.plugin.dvcs_webui.ui.fcp.messages.Unknown;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
@@ -21,27 +24,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tracks session state and dispatches messages to specific handlers.
  * <p/>
- * The UI event code currently handles a single event at a time, and treats more than one simultaneous ClearToSend
- * as an error. This is simpler to get things started, but is likely to be slow. Asynchronous code is a good place to
- * look for initial performance improvements.
+ * The UI event code currently handles a single event at a time This is simpler to get things started, but will be slow.
+ * Asynchronous code is a good place to look for initial performance improvements.
  */
 public class FCPHandler implements FredPluginFCP {
-
-    /*
-     * TODO: Where to keep state, like which sessions are still considered connected? Hm, that should be any message.
-     * Still, where to keep state when it is needed? Per message type doesn't seem to make sense. It depends on the
-     * type of state and where it's needed, so perhaps that remains to be seen when actual functionality comes into
-     * the fold.
-     *
-     * Is connectedness only a UI thing? It would make sense if any message causes reconnection,
-     * and there isn't yet an apparent reason why a session would carry its own state.
-     *
-     * So Infocalypse sends Ping, which merits no response, and ClearToSend, which replies with whatever user request
-     * from the UI?
-     *
-     * TODO: Does it make sense to only allow one session at once? Is there a less ugly way to implement a timeout?
-     */
-
 	/**
 	 * Seconds before an FCP connection to Infocalypse is considered timed out.
 	 */
@@ -50,58 +36,126 @@ public class FCPHandler implements FredPluginFCP {
 	private final ScheduledThreadPoolExecutor executor;
 	private Future timeout;
 
-	// TODO: Timeout or Disconnect releases.
-	// TODO: How best to track session state?
+	/**
+	 * Contains a single permit which is taken by a client when it connects and
+	 * released when it disconnects or times out.
+	 */
 	private final Semaphore connected;
+	/**
+	 * Token given to the connected DVCS instance.
+	 */
+	private String sessionToken;
+
 	// TODO: Is this an appropriate place to keep a query list?
-	private final BlockingQueue<InfocalypseQuery> queries;
+	private final BlockingQueue<Query> queries;
 
 	private final HashMap<String, MessageHandler> handlers;
+	private final HashMap<String, QueryResult> resultHandlers;
 
-	public FCPHandler() {
+	private final RandomSource random;
+
+	public FCPHandler(RandomSource randomSource) {
 		executor = new ScheduledThreadPoolExecutor(1);
-		queries = new LinkedBlockingQueue<InfocalypseQuery>();
+		queries = new LinkedBlockingQueue<Query>();
 		connected = new Semaphore(1);
+		sessionToken = null;
+		random = randomSource;
 
 		handlers = new HashMap<String, MessageHandler>();
 		handlers.put("Ping", new Ping());
 		handlers.put("Ready", new Ready(this));
+
+		resultHandlers = new HashMap<String, QueryResult>();
+		resultHandlers.put("VoidResult", new QueryResult());
+
+		// Result handlers are a subset of handlers. They are separate to allow registering listeners.
+		handlers.putAll(resultHandlers);
 	}
 
 	@Override
 	public void handle(PluginReplySender replySender, SimpleFieldSet params, Bucket data, int accessType) {
 		// TODO: What to do with accessType?
-		// TODO: Switching on strings would be nice given Java 7 or up. Also consider a map of pre-constructed handler
-		// classes or reflection like LCWoT's FCP interface.
-		// TODO: Will the flow resulting from having the response out here be desirable?
+		try {
+			SimpleFieldSet sfs = getResponse(params);
+			replySender.send(sfs);
+		} catch (PluginNotFoundException e) {
+			System.err.println("Cannot find plugin / connection closed: " + e);
+		}
+	}
+
+	public void registerListener(ResultListener listener, String queryIdentifier) {
+		resultHandlers.get(listener.handles()).register(queryIdentifier, listener);
+	}
+
+	/**
+	 * Internal response handler. Control flow should be easier to follow than otherwise because of the ability to
+	 * use return statements.
+	 *
+	 * @param params received message.
+	 * @return response to the message.
+	 */
+	private SimpleFieldSet getResponse(SimpleFieldSet params) {
 		final String message = params.get("Message");
 		SimpleFieldSet response = new SimpleFieldSet(true);
+
+		// Something is trying to connect.
 		if (message.equals("Hello")) {
 			if (connected.tryAcquire()) {
-				// TODO: Check supported queries. Probably should be an error if not enough are supported?
+				// If the semaphore is releases the session token should be unset. See disconnect().
+				assert sessionToken == null;
+
+				// TODO: Check supported queries. Give an error if not enough are supported?
+				// TODO: Also check version number.
 				response.putOverwrite("Message", "HiThere");
+
+				sessionToken = Long.toString(random.nextLong());
+				response.putOverwrite("SessionToken", sessionToken);
+
 				startTimeout();
 			} else {
 				response.putOverwrite("Message", "Error");
 				response.putOverwrite("Description", "Another DVCS is already connected.");
 			}
-		} else {
-			// A message was received - restart the timeout.
-			timeout.cancel(true);
-			startTimeout();
-
-			// TODO: Is this appropriate for query replies, though? Sure, why not. Must sort out by identifier.
-			if (handlers.containsKey(message)) {
-				response = handlers.get(message).reply(params);
-			} else {
-				response = new Unknown().reply(params);
-			}
+			return response;
 		}
 
-		try {
-			replySender.send(response);
-		} catch (PluginNotFoundException e) {
-			System.err.println("Cannot find plugin / connection closed: " + e);
+		// The message is not Hello, yet nothing is connected.
+		if (sessionToken == null) {
+			assert connected.availablePermits() == 1;
+			response.putOverwrite("Message", "Error");
+			response.putOverwrite("Description", "Hello must be the first message. Nothing is connected currently.");
+			return response;
+		}
+
+		// The message is something sent after "Hello", so make sure the session token matches.
+		if (!sessionToken.equals(params.get("SessionToken"))) {
+			response.putOverwrite("Message", "Error");
+
+			if (params.get("SessionToken") == null) {
+				response.putOverwrite("Description", "Missing SessionToken");
+			} else {
+				response.putOverwrite("Description", "Incorrect SessionToken");
+			}
+
+			return response;
+		}
+
+		if (message.equals("Disconnect")) {
+			disconnect();
+			response.putOverwrite("Message", "Bye");
+			return response;
+		}
+
+		// A message with the connected token was received - restart the timeout.
+		timeout.cancel(true);
+		startTimeout();
+
+		// TODO: Is this appropriate for query replies, though? Sure, why not. Must sort out by queryIdentifier.
+		// Find a handler or reply with an "Unrecognized message" error.
+		if (handlers.containsKey(message)) {
+			return handlers.get(message).reply(params);
+		} else {
+			return new Unknown().reply(params);
 		}
 	}
 
@@ -109,12 +163,22 @@ public class FCPHandler implements FredPluginFCP {
 		timeout = executor.schedule(new Runnable() {
 			@Override
 			public void run() {
-				connected.release();
+				disconnect();
 			}
 		}, fcpTimeout, TimeUnit.SECONDS);
 	}
 
-	public void pushQuery(InfocalypseQuery query) {
+	private void disconnect() {
+		// TODO: Reset application state. (In pages.)
+		queries.clear();
+
+		sessionToken = null;
+
+		connected.release();
+		System.out.printf("%s: Disconnected.\n", new Date());
+	}
+
+	public void pushQuery(Query query) {
 		queries.add(query);
 	}
 
@@ -122,15 +186,15 @@ public class FCPHandler implements FredPluginFCP {
 	 * Block until there is something.
 	 * @return the next query in the queue.
 	 */
-	public InfocalypseQuery takeQuery() {
-		InfocalypseQuery query = null;
+	public Query takeQuery() {
+		Query query = null;
 
 		do {
 			try {
 				query = queries.take();
 			} catch (InterruptedException e) {
 			}
-			// Check because take() might have been interrupted.
+			// Check because take() might have been interrupted. Note that a BlockingQueue does not accept null values.
 		} while (query == null);
 
 		return query;
