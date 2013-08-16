@@ -1,9 +1,4 @@
 <h1>$t.get("Welcome")</h1>
-<ul>
-#foreach( $greeting in $greetings )
-    <li>$greeting</li>
-#end
-</ul>
 <h2>
 #if ( $connected )
     $t.get("Connected")
