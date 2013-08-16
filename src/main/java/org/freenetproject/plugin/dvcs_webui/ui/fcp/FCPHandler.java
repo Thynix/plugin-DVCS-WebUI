@@ -72,6 +72,16 @@ public class FCPHandler implements FredPluginFCP {
 		handlers.putAll(resultHandlers);
 	}
 
+	public boolean isConnected() {
+		/*
+		 * sessionToken is null <--> nothing is connected.
+		 * sessionToken is not null <--> something is connected.
+		 */
+		assert (sessionToken == null && connected.availablePermits() == 1) ||
+		       (sessionToken != null && connected.availablePermits() == 0);
+		return sessionToken != null;
+	}
+
 	@Override
 	public void handle(PluginReplySender replySender, SimpleFieldSet params, Bucket data, int accessType) {
 		// TODO: What to do with accessType?

@@ -5,8 +5,8 @@
 #end
 </ul>
 <h2>
-#if ( $identifier )
-    $t.get("Connected"): $identifier
+#if ( $connected )
+    $t.get("Connected")
 #else
     $t.get("Disconnected")
 #end
