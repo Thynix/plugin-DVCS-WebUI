@@ -83,10 +83,6 @@ public class FCPHandler implements FredPluginFCP {
 		}
 	}
 
-	public void registerListener(ResultListener listener, String queryIdentifier) {
-		resultHandlers.get(listener.handles()).register(queryIdentifier, listener);
-	}
-
 	/**
 	 * Internal response handler. Control flow should be easier to follow than otherwise because of the ability to
 	 * use return statements.
@@ -159,23 +155,8 @@ public class FCPHandler implements FredPluginFCP {
 		}
 	}
 
-	private void startTimeout() {
-		timeout = executor.schedule(new Runnable() {
-			@Override
-			public void run() {
-				disconnect();
-			}
-		}, fcpTimeout, TimeUnit.SECONDS);
-	}
-
-	private void disconnect() {
-		// TODO: Reset application state. (In pages.)
-		queries.clear();
-
-		sessionToken = null;
-
-		connected.release();
-		System.out.printf("%s: Disconnected.\n", new Date());
+	public void registerListener(ResultListener listener, String queryIdentifier) {
+		resultHandlers.get(listener.handles()).register(queryIdentifier, listener);
 	}
 
 	public void pushQuery(Query query) {
@@ -198,5 +179,24 @@ public class FCPHandler implements FredPluginFCP {
 		} while (query == null);
 
 		return query;
+	}
+
+	private void startTimeout() {
+		timeout = executor.schedule(new Runnable() {
+			@Override
+			public void run() {
+				disconnect();
+			}
+		}, fcpTimeout, TimeUnit.SECONDS);
+	}
+
+	private void disconnect() {
+		// TODO: Reset application state. (In pages.)
+		queries.clear();
+
+		sessionToken = null;
+
+		connected.release();
+		System.out.printf("%s: Disconnected.\n", new Date());
 	}
 }
