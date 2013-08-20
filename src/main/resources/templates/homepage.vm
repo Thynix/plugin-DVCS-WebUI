@@ -11,3 +11,8 @@
     <li>$path</li>
 #end
 </ul>
+<ul>
+#foreach( $identifier in $identifiers)
+    <li>$identifier</li>
+#end
+</ul>
