@@ -21,6 +21,7 @@ public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersi
 	private PluginRespirator pluginRespirator;
 	private ToadletContainer tc;
 
+	private WoTConnector woTConnector;
 	private FCPHandler fcpHandler;
 	private Homepage homepage;
 
@@ -39,7 +40,8 @@ public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersi
 
 		L10n l10n = new L10n();
 		fcpHandler = new FCPHandler(pr.getNode().random);
-		homepage = new Homepage(pr.getHLSimpleClient(), l10n, fcpHandler);
+		woTConnector = new WoTConnector(pr);
+		homepage = new Homepage(pr.getHLSimpleClient(), l10n, fcpHandler, woTConnector);
 
 		pluginRespirator.getPageMaker().addNavigationCategory(homepage.path(), menuName, menuName, l10n);
 		tc.register(homepage, menuName, homepage.path(), true, menuName, menuName, false, homepage);
