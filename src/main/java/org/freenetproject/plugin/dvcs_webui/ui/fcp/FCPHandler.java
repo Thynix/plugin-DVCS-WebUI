@@ -66,7 +66,10 @@ public class FCPHandler implements FredPluginFCP {
 		handlers.put("Ready", new Ready(this));
 
 		resultHandlers = new HashMap<String, QueryResult>();
-		resultHandlers.put("VoidResult", new QueryResult());
+		// TODO: Require that all query names end with "Query" and result names with "Result"?
+		for (String resultType : new String[] {"VoidResult", "LocalRepoResult"}) {
+			resultHandlers.put(resultType, new QueryResult());
+		}
 
 		// Result handlers are a subset of handlers. They are separate to allow registering listeners.
 		handlers.putAll(resultHandlers);
@@ -152,6 +155,10 @@ public class FCPHandler implements FredPluginFCP {
 			return response;
 		}
 
+		if (!message.equals("Ping")) {
+			System.err.println(params);
+		}
+
 		// A message with the connected token was received - restart the timeout.
 		timeout.cancel(true);
 		startTimeout();
@@ -203,6 +210,10 @@ public class FCPHandler implements FredPluginFCP {
 	private void disconnect() {
 		// TODO: Reset application state. (In pages.)
 		queries.clear();
+
+		// The disconnect might be client-prompted, in which case there should not be a timeout.
+		// TODO: Is locking needed here to prevent race conditions?
+		timeout.cancel(false);
 
 		sessionToken = null;
 
