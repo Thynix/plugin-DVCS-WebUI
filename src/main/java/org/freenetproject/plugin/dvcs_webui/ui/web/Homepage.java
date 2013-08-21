@@ -22,8 +22,6 @@ public class Homepage extends VelocityToadlet {
 
 	private final FCPHandler fcpHandler;
 	private final WoTConnector woTConnector;
-	// TODO: Assuming this needs to be private (and not local) to stay around and not get GC'd?
-	private final ScheduledThreadPoolExecutor executor;
 	/**
 	 * Local paths to repositories reported by DVCS.
 	 */
@@ -39,7 +37,7 @@ public class Homepage extends VelocityToadlet {
 
 		localPaths = new ArrayList<String>();
 
-		executor = new ScheduledThreadPoolExecutor(1);
+		final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 		// Query local repo information immediately and every 5 seconds thereafter.
 		executor.scheduleWithFixedDelay(new LocalRepoListQuery(), 0, 5, TimeUnit.SECONDS);
 	}
@@ -88,6 +86,7 @@ public class Homepage extends VelocityToadlet {
 			}
 		}
 
+		// TODO: Move handles() functionality to Query constructor?
 		@Override
 		public String handles() {
 			return "LocalRepoResult";

@@ -1,6 +1,5 @@
 package org.freenetproject.plugin.dvcs_webui.main;
 
-import freenet.node.FSParseException;
 import freenet.pluginmanager.FredPluginTalker;
 import freenet.pluginmanager.PluginNotFoundException;
 import freenet.pluginmanager.PluginRespirator;
@@ -10,7 +9,6 @@ import freenet.support.api.Bucket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,7 +40,7 @@ public class WoTConnector implements FredPluginTalker {
 
 	/**
 	 * Create a connection with WoT, and keep information from it up to date.
-	 * @param pr
+	 * @param pr used to connect to WoT.
 	 */
 	public WoTConnector(PluginRespirator pr) {
 		final PluginTalker pt = connect(pr);
@@ -62,7 +60,7 @@ public class WoTConnector implements FredPluginTalker {
 	}
 
 	@Override
-	public void onReply(String pluginname, String indentifier, SimpleFieldSet params, Bucket data) {
+	public void onReply(String pluginname, String identifier, SimpleFieldSet params, Bucket data) {
 		Iterator<String> keyIterator = params.keyIterator();
 		synchronized (local_identifiers) {
 			local_identifiers.clear();

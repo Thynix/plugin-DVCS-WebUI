@@ -31,7 +31,7 @@ public class FCPHandler implements FredPluginFCP {
 	/**
 	 * Seconds before an FCP connection to Infocalypse is considered timed out.
 	 */
-	public static final long fcpTimeout = 5;
+	private static final long fcpTimeout = 5;
 
 	private final ScheduledThreadPoolExecutor executor;
 	private Future timeout;
@@ -110,7 +110,7 @@ public class FCPHandler implements FredPluginFCP {
 		// Something is trying to connect.
 		if (message.equals("Hello")) {
 			if (connected.tryAcquire()) {
-				// If the semaphore is releases the session token should be unset. See disconnect().
+				// If the semaphore is released the session token should be unset. See disconnect().
 				assert sessionToken == null;
 
 				// TODO: Check supported queries. Give an error if not enough are supported?
