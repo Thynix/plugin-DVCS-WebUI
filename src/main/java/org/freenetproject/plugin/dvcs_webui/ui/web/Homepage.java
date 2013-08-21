@@ -30,8 +30,7 @@ public class Homepage extends VelocityToadlet {
 	// TODO: Some way to reset stored state. (For when a client disconnects or times out.)
 
 	public Homepage(HighLevelSimpleClient client, L10n l10n, FCPHandler handler, WoTConnector connector) {
-		// TODO: Remove "Infocalypse" from l10n; path.
-		super(client, l10n, "homepage.vm", "/infocalypse/", "Infocalypse.Menu");
+		super(client, l10n, "homepage.vm", "/dvcs/", "Menu");
 		fcpHandler = handler;
 		woTConnector = connector;
 
