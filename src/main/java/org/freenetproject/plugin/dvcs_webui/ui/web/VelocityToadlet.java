@@ -61,7 +61,7 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 		return true;
 	}
 
-	public void handleMethodGET(URI uri, HTTPRequest request, ToadletContext ctx) throws
+	public final void handleMethodGET(URI uri, HTTPRequest request, ToadletContext ctx) throws
 			ToadletContextClosedException, IOException {
 
 		VelocityContext context = new VelocityContext();
@@ -71,7 +71,7 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 
 		context.put("t", l10n);
 
-		updateContext(context);
+		onGet(context);
 
 		StringWriter writer = new StringWriter();
 		Velocity.mergeTemplate(getTemplate(), Plugin.encoding, context, writer);
@@ -82,6 +82,13 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 		writeReply(ctx, 200, "text/html", "OK", pageNode.outer.generate());
 	}
 
+	// TODO: Is it appropriate to react to POSTs in this way?
+	public final void handleMethodPOST(URI uri, HTTPRequest request, ToadletContext ctx) throws
+			ToadletContextClosedException, IOException {
+		onPost(request);
+		handleMethodGET(uri, request, ctx);
+	}
+
 	/**
 	 * @return templateName along with the qualifiers for the classpath loader to find it.
 	 */
@@ -90,9 +97,19 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 	}
 
 	/**
-	 * Puts additional variables, properties, and methods in the context as required.
+	 * Put additional variables, properties, and methods in the context as required. Called before rendering the
+	 * template with the context.
 	 *
 	 * @param context context to modify
 	 */
-	abstract void updateContext(VelocityContext context);
+	abstract void onGet(VelocityContext context);
+
+	/**
+	 * Modify state as desired in response to a POST request. Called before rendering the page as in response to a GET.
+	 * The VelocityToadlet implementation does nothing.
+	 * @param request describes POST parameters.
+	 */
+	// TODO: Would it make sense to include the URI as well?
+	void onPost(HTTPRequest request) {
+	}
 }

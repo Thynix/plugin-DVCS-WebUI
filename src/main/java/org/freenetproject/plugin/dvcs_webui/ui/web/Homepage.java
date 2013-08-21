@@ -42,7 +42,7 @@ public class Homepage extends VelocityToadlet {
 	}
 
 	@Override
-	void updateContext(VelocityContext context) {
+	void onGet(VelocityContext context) {
 		context.put("connected", fcpHandler.isConnected());
 		synchronized (localPaths) {
 			// TODO: Is toArray() required? Trying to avoid partial lists.
