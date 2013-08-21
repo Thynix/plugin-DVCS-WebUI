@@ -24,7 +24,7 @@ public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersi
 	private FCPHandler fcpHandler;
 	private Homepage homepage;
 
-	private static final String menuName = "Infocalypse.Menu";
+	private static final String menuName = "Menu";
 
 	public static final String encoding = "UTF-8";
 

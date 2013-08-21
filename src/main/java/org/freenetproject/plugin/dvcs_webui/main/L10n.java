@@ -39,12 +39,12 @@ public class L10n implements FredPluginBaseL10n, FredPluginL10n {
 
 	@Override
 	public String getL10nFilesMask() {
-		return "Infocalypse.${lang}.properties";
+		return "DVCS.${lang}.properties";
 	}
 
 	@Override
 	public String getL10nOverrideFilesMask() {
-		return "Infocalypse.${lang}.override.properties";
+		return "DVCS.${lang}.override.properties";
 	}
 
 	@Override

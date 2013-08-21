@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class FCPHandler implements FredPluginFCP {
 	/**
-	 * Seconds before an FCP connection to Infocalypse is considered timed out.
+	 * Seconds before an FCP connection to a DVCS is considered timed out.
 	 */
 	private static final long fcpTimeout = 5;
 
