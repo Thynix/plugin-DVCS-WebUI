@@ -34,7 +34,7 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 	 * @param path         path to register to.
 	 * @param title        page title localization key.
 	 */
-	public VelocityToadlet(HighLevelSimpleClient client, L10n l10n, String templateName, String path,
+	VelocityToadlet(HighLevelSimpleClient client, L10n l10n, String templateName, String path,
 	                       String title) {
 		super(client);
 		this.l10n = l10n;
@@ -76,7 +76,7 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 		StringWriter writer = new StringWriter();
 		Velocity.mergeTemplate(getTemplate(), Plugin.encoding, context, writer);
 
-		PageNode pageNode = ctx.getPageMaker().getPageNode("Infocalypse", ctx);
+		PageNode pageNode = ctx.getPageMaker().getPageNode(title, ctx);
 		pageNode.content.addChild("%", writer.toString());
 
 		writeReply(ctx, 200, "text/html", "OK", pageNode.outer.generate());

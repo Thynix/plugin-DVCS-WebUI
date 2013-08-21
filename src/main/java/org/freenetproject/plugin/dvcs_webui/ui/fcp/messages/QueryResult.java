@@ -15,7 +15,7 @@ public class QueryResult implements MessageHandler {
 	/**
 	 * An exchange uses the same QueryIdentifier between the Ready, query, response, and Ack.
 	 */
-	private HashMap<String, ResultListener> listeners;
+	private final HashMap<String, ResultListener> listeners;
 
 	public QueryResult() {
 		listeners = new HashMap<String, ResultListener>();
