@@ -34,7 +34,7 @@ public class WoTConnector implements FredPluginTalker {
 	private static final long WoT_POLL = 30;
 
 	/**
-	 * nickname@public key hash for each local identity.
+	 * [nickname]@[identity ID] for each local identity.
 	 */
 	private final HashSet<String> local_identifiers;
 
@@ -74,15 +74,15 @@ public class WoTConnector implements FredPluginTalker {
 					 * The string "Nickname" is 8 characters long.
 					 */
 					final String index = key.substring(8);
-					final String identity = params.get("Identity" + index);
-					local_identifiers.add(nickname + "@" + identity);
+					final String identity_id = params.get("Identity" + index);
+					local_identifiers.add(nickname + "@" + identity_id);
 				}
 			}
 		}
 	}
 
 	/**
-	 * @return nickname@
+	 * @return nickname@identity id for all local identities.
 	 */
 	public Collection<String> getLocalIdentifiers() {
 		synchronized (local_identifiers) {
