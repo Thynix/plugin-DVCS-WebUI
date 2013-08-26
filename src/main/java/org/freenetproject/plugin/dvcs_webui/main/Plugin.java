@@ -1,5 +1,6 @@
 package org.freenetproject.plugin.dvcs_webui.main;
 
+import freenet.clients.http.SessionManager;
 import freenet.clients.http.ToadletContainer;
 import freenet.pluginmanager.FredPlugin;
 import freenet.pluginmanager.FredPluginFCP;
@@ -28,6 +29,11 @@ public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersi
 
 	public static final String encoding = "UTF-8";
 
+	/**
+	 * Cookie namespace for sessions. Used to find WoT logins.
+	 */
+	private static final String SESSION_NAMESPACE = "WebOfTrust";
+
 	public String getVersion() {
 		return "0.1-SNAPSHOT";
 	}
@@ -39,9 +45,10 @@ public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersi
 
 		L10n l10n = new L10n();
 		WoTConnector woTConnector = new WoTConnector(pr);
+		SessionManager sessionManager = pr.getSessionManager(SESSION_NAMESPACE);
 
 		fcpHandler = new FCPHandler(pr.getNode().random);
-		homepage = new Homepage(pr.getHLSimpleClient(), l10n, fcpHandler, woTConnector);
+		homepage = new Homepage(pr.getHLSimpleClient(), l10n, fcpHandler, woTConnector, sessionManager);
 
 		pluginRespirator.getPageMaker().addNavigationCategory(homepage.path(), menuName, menuName, l10n);
 		tc.register(homepage, menuName, homepage.path(), true, menuName, menuName, false, homepage);

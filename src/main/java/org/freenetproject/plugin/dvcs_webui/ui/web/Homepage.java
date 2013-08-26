@@ -1,15 +1,20 @@
 package org.freenetproject.plugin.dvcs_webui.ui.web;
 
 import freenet.client.HighLevelSimpleClient;
+import freenet.clients.http.SessionManager;
+import freenet.clients.http.ToadletContext;
 import freenet.node.FSParseException;
 import freenet.support.SimpleFieldSet;
+import freenet.support.api.HTTPRequest;
 import org.apache.velocity.VelocityContext;
+import org.apache.velocity.tools.view.CookieTool;
 import org.freenetproject.plugin.dvcs_webui.main.L10n;
 import org.freenetproject.plugin.dvcs_webui.main.WoTConnector;
 import org.freenetproject.plugin.dvcs_webui.ui.fcp.FCPHandler;
 import org.freenetproject.plugin.dvcs_webui.ui.fcp.Query;
 import org.freenetproject.plugin.dvcs_webui.ui.fcp.ResultListener;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -29,8 +34,8 @@ public class Homepage extends VelocityToadlet {
 
 	// TODO: Some way to reset stored state. (For when a client disconnects or times out.)
 
-	public Homepage(HighLevelSimpleClient client, L10n l10n, FCPHandler handler, WoTConnector connector) {
-		super(client, l10n, "homepage.vm", "/dvcs/", "Menu");
+	public Homepage(HighLevelSimpleClient client, L10n l10n, FCPHandler handler, WoTConnector connector, SessionManager sessionManager) {
+		super(client, l10n, sessionManager, "homepage.vm", "/dvcs/", "Menu");
 		fcpHandler = handler;
 		woTConnector = connector;
 
@@ -39,6 +44,15 @@ public class Homepage extends VelocityToadlet {
 		final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 		// Query local repo information immediately and every 5 seconds thereafter.
 		executor.scheduleWithFixedDelay(new LocalRepoListQuery(), 0, 5, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * The homepage is always enabled so that the menu entry is displayed.
+	 * @return true
+	 */
+	@Override
+	public boolean isEnabled(ToadletContext ctx) {
+		return true;
 	}
 
 	@Override

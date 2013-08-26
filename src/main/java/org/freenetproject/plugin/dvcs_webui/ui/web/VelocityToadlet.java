@@ -3,6 +3,8 @@ package org.freenetproject.plugin.dvcs_webui.ui.web;
 import freenet.client.HighLevelSimpleClient;
 import freenet.clients.http.LinkEnabledCallback;
 import freenet.clients.http.PageNode;
+import freenet.clients.http.RedirectException;
+import freenet.clients.http.SessionManager;
 import freenet.clients.http.Toadlet;
 import freenet.clients.http.ToadletContext;
 import freenet.clients.http.ToadletContextClosedException;
@@ -15,12 +17,20 @@ import org.freenetproject.plugin.dvcs_webui.main.Plugin;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 /**
  * Uses Velocity templates to render a Toadlet.
  */
 public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCallback {
+
+	private final SessionManager sessionManager;
+
+	/**
+	 * URI of the WoT login page. Redirected to when no identity has a session.
+	 */
+	private final URI wotLogin;
 
 	private final String path;
 	private final String templateName;
@@ -30,13 +40,23 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 	/**
 	 * @param client       required by Toadlet.
 	 * @param l10n         used to localize page and title.
+	 * @param sessionManager used to check for WoT login.
 	 * @param templateName template filename to use.
 	 * @param path         path to register to.
 	 * @param title        page title localization key.
 	 */
-	VelocityToadlet(HighLevelSimpleClient client, L10n l10n, String templateName, String path,
-	                       String title) {
+	VelocityToadlet(HighLevelSimpleClient client, L10n l10n, SessionManager sessionManager, String templateName,
+	                String path, String title) {
 		super(client);
+
+		this.sessionManager = sessionManager;
+
+		try {
+			wotLogin = new URI(null, null, "/WebOfTrust/LogIn/", "redirect-target=" + path, null);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException("Programming error: invalid syntax in wotLogin URI.", e);
+		}
+
 		this.l10n = l10n;
 		this.path = path;
 		this.templateName = templateName;
@@ -56,13 +76,35 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 		return path;
 	}
 
+	/**
+	 * By default pages are only enabled if a WoT identity is logged in.
+	 * @param ctx
+	 * @return
+	 */
 	@Override
 	public boolean isEnabled(ToadletContext ctx) {
-		return true;
+		return sessionManager.sessionExists(ctx);
 	}
 
+	/**
+	 * Adds default things to the context, and redirects to the WoT login page if this page is not enabled.<br/>
+	 * Things added to the context.
+	 * <ul>
+	 *     <li>Query parameters</li>
+	 *     <li>t can be queried for localization with .get()</li>
+	 *     <li>local-id has the identity ID of the logged-in identity.</li>
+	 * </ul>
+	 * @throws RedirectException if the page is not enabled.
+	 */
 	public final void handleMethodGET(URI uri, HTTPRequest request, ToadletContext ctx) throws
 			ToadletContextClosedException, IOException {
+
+		// Some pages may want to always be enabled so that they show in the menu, but they still need login.
+		// TODO: Configurable?
+		if (!sessionManager.sessionExists(ctx)) {
+			writeTemporaryRedirect(ctx, "Not logged in", wotLogin.toString());
+			return;
+		}
 
 		VelocityContext context = new VelocityContext();
 		for (String key : request.getParameterNames()) {
@@ -70,6 +112,7 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 		}
 
 		context.put("t", l10n);
+		context.put("local-id", sessionManager.useSession(ctx).getUserID());
 
 		onGet(context);
 
