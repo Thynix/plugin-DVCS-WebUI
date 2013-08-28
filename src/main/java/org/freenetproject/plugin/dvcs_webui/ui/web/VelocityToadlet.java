@@ -3,7 +3,6 @@ package org.freenetproject.plugin.dvcs_webui.ui.web;
 import freenet.client.HighLevelSimpleClient;
 import freenet.clients.http.LinkEnabledCallback;
 import freenet.clients.http.PageNode;
-import freenet.clients.http.RedirectException;
 import freenet.clients.http.SessionManager;
 import freenet.clients.http.Toadlet;
 import freenet.clients.http.ToadletContext;
@@ -78,8 +77,6 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 
 	/**
 	 * By default pages are only enabled if a WoT identity is logged in.
-	 * @param ctx
-	 * @return
 	 */
 	@Override
 	public boolean isEnabled(ToadletContext ctx) {
@@ -94,7 +91,6 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 	 *     <li>t can be queried for localization with .get()</li>
 	 *     <li>local-id has the identity ID of the logged-in identity.</li>
 	 * </ul>
-	 * @throws RedirectException if the page is not enabled.
 	 */
 	public final void handleMethodGET(URI uri, HTTPRequest request, ToadletContext ctx) throws
 			ToadletContextClosedException, IOException {
