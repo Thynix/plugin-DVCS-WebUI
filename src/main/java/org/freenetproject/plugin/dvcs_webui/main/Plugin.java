@@ -25,9 +25,9 @@ public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersi
 	private FCPHandler fcpHandler;
 	private Homepage homepage;
 
-	private static final String menuName = "Menu";
+	private static final String MENU_NAME = "Menu";
 
-	public static final String encoding = "UTF-8";
+	public static final String ENCODING = "UTF-8";
 
 	/**
 	 * Cookie namespace for sessions. Used to find WoT logins.
@@ -50,15 +50,15 @@ public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersi
 		fcpHandler = new FCPHandler(pr.getNode().random);
 		homepage = new Homepage(pr.getHLSimpleClient(), l10n, fcpHandler, woTConnector, sessionManager);
 
-		pluginRespirator.getPageMaker().addNavigationCategory(homepage.path(), menuName, menuName, l10n);
-		tc.register(homepage, menuName, homepage.path(), true, menuName, menuName, false, homepage);
+		pluginRespirator.getPageMaker().addNavigationCategory(homepage.path(), MENU_NAME, MENU_NAME, l10n);
+		tc.register(homepage, MENU_NAME, homepage.path(), true, MENU_NAME, MENU_NAME, false, homepage);
 	}
 
 	@Override
 	public void terminate() {
 		tc.unregister(homepage);
 
-		pluginRespirator.getPageMaker().removeNavigationCategory(menuName);
+		pluginRespirator.getPageMaker().removeNavigationCategory(MENU_NAME);
 	}
 
 	@Override

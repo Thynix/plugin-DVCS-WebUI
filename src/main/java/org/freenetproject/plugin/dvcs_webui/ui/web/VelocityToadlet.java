@@ -117,7 +117,7 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 		onGet(context);
 
 		StringWriter writer = new StringWriter();
-		Velocity.mergeTemplate(getTemplate(), Plugin.encoding, context, writer);
+		Velocity.mergeTemplate(getTemplate(), Plugin.ENCODING, context, writer);
 
 		PageNode pageNode = ctx.getPageMaker().getPageNode(title, ctx);
 		pageNode.content.addChild("%", writer.toString());
