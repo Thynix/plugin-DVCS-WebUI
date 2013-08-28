@@ -42,21 +42,27 @@ public class WoTConnector implements FredPluginTalker {
 	 * Create a connection with WoT, and keep information from it up to date.
 	 * @param pr used to connect to WoT.
 	 */
-	public WoTConnector(PluginRespirator pr) {
-		final PluginTalker pt = connect(pr);
-
-		final SimpleFieldSet sfs = new SimpleFieldSet(false);
-		sfs.putOverwrite("Message", "GetOwnIdentities");
-
+	public WoTConnector(final PluginRespirator pr) {
 		local_identifiers = new HashSet<String>();
 
-		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-		executor.scheduleWithFixedDelay(new Runnable() {
+		ScheduledThreadPoolExecutor startupExecutor = new ScheduledThreadPoolExecutor(1);
+		startupExecutor.execute(new Runnable() {
 			@Override
 			public void run() {
-				pt.send(sfs, null);
+				final PluginTalker pt = connect(pr);
+
+				final SimpleFieldSet sfs = new SimpleFieldSet(false);
+				sfs.putOverwrite("Message", "GetOwnIdentities");
+
+				ScheduledThreadPoolExecutor pollingExecutor = new ScheduledThreadPoolExecutor(1);
+				pollingExecutor.scheduleWithFixedDelay(new Runnable() {
+					@Override
+					public void run() {
+						pt.send(sfs, null);
+					}
+				}, 0, WoT_POLL, TimeUnit.SECONDS);
 			}
-		}, 0, WoT_POLL, TimeUnit.SECONDS);
+		});
 	}
 
 	@Override
