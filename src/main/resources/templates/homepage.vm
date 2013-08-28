@@ -1,10 +1,11 @@
 <h1>$t.get("Welcome")</h1>
-<h2>
 #if ( $connected )
     $t.get("Connected")
 #else
     $t.get("Disconnected")
 #end
+<h2>
+$t.get("LocalRepositories"):
 </h2>
 <ul>
 #foreach( $path in $paths )
