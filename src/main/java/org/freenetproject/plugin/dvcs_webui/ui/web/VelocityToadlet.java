@@ -109,6 +109,7 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 
 		context.put("t", l10n);
 		context.put("local-id", sessionManager.useSession(ctx).getUserID());
+		context.put("csrf-token", ctx.getFormPassword());
 
 		onGet(context);
 
@@ -124,6 +125,17 @@ public abstract class VelocityToadlet extends Toadlet implements LinkEnabledCall
 	// TODO: Is it appropriate to react to POSTs in this way?
 	public final void handleMethodPOST(URI uri, HTTPRequest request, ToadletContext ctx) throws
 			ToadletContextClosedException, IOException {
+		if (!ctx.isAllowedFullAccess()) {
+			writeReply(ctx, 403, "text/plain", "forbidden", "Your host is not allowed to access this page.");
+			return;
+		}
+
+		// TODO: What is that actual length of this?
+		if(!request.getPartAsStringFailsafe("formPassword", Integer.MAX_VALUE).equals(ctx.getFormPassword())) {
+			writeReply(ctx, 403, "text/plain", "forbidden", "The form password is incorrect");
+			return;
+		}
+
 		onPost(request);
 		handleMethodGET(uri, request, ctx);
 	}

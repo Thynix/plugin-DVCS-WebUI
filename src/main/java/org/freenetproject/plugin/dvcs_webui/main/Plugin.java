@@ -14,6 +14,7 @@ import freenet.support.SimpleFieldSet;
 import freenet.support.api.Bucket;
 import org.freenetproject.plugin.dvcs_webui.ui.fcp.FCPHandler;
 import org.freenetproject.plugin.dvcs_webui.ui.web.Homepage;
+import org.freenetproject.plugin.dvcs_webui.ui.web.RepositoryList;
 
 import java.util.ArrayList;
 
@@ -32,6 +33,17 @@ public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersi
 	private static final String MENU_NAME = "Menu";
 
 	public static final String ENCODING = "UTF-8";
+
+	/**
+	 * Length in characters of a WoT identity ID, which is also an SSK public key hash.
+	 */
+	public static final int IDENTITY_ID_LENGTH = 43;
+
+	/**
+	 * Maximum length of an identifier for a WoT identity. This can consist of a nickname,
+	 * which is up to 30 characters, an '@', and an identity ID.
+	 */
+	public static final int MAX_IDENTIFIER_LENGTH = 30 + 1 + IDENTITY_ID_LENGTH;
 
 	/**
 	 * Cookie namespace for sessions. Used to find WoT logins.
@@ -64,11 +76,16 @@ public class Plugin implements FredPlugin, FredPluginThreadless, FredPluginVersi
 
 		fcpHandler = new FCPHandler(pr.getNode().random);
 		Homepage homepage = new Homepage(hLSimpleClient, l10n, fcpHandler, woTConnector, sessionManager);
+		RepositoryList repositoryList = new RepositoryList(hLSimpleClient, l10n, fcpHandler, sessionManager);
 
+		// TODO: Reduce duplication by having a wrapper provide the name and title keys. (getName()?)
 		toadlets.add(homepage);
+		toadlets.add(repositoryList);
 
 		pluginRespirator.getPageMaker().addNavigationCategory(homepage.path(), MENU_NAME, MENU_NAME, l10n);
 		tc.register(homepage, MENU_NAME, homepage.path(), true, MENU_NAME, MENU_NAME, false, homepage);
+		tc.register(repositoryList, MENU_NAME, repositoryList.path(), true, "ListRepositories", "ListRepositories",
+				false, repositoryList);
 	}
 
 	@Override

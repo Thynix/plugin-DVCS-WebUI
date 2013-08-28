@@ -67,7 +67,11 @@ public class FCPHandler implements FredPluginFCP {
 
 		resultHandlers = new HashMap<String, QueryResult>();
 		// TODO: Require that all query names end with "Query" and result names with "Result"?
-		for (String resultType : new String[] {"VoidResult", "LocalRepoResult"}) {
+		/*
+		 * TODO: Separate lists for each query type means that errors must still have the result as their message type.
+		 * Would it make more sense to have a single list keyed by QueryIdentifier?
+		 */
+		for (String resultType : new String[] {"VoidResult", "LocalRepoResult", "RepoListResult"}) {
 			resultHandlers.put(resultType, new QueryResult());
 		}
 

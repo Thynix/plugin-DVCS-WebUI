@@ -1,0 +1,13 @@
+<form method="post">
+    <label for="remote">$t.get("WoTIdentifier")</label><input type="text" name="remote_identifier" id="remote">
+    <input type="hidden" name="local-id" value="$local-id">
+	<input type="hidden" name="formPassword" value="$csrf-token">
+    <input type="submit">
+</form>
+
+<ul>
+    ## TODO: Link to repo details page.
+    #foreach( $repository in $repositories )
+        <li><a href="$repository.Key">$repository.Name</a></li>
+    #end
+</ul>

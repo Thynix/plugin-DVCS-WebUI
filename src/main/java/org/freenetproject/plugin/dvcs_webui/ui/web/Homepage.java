@@ -42,8 +42,8 @@ public class Homepage extends VelocityToadlet {
 		localPaths = new ArrayList<String>();
 
 		final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-		// Query local repo information immediately and every 5 seconds thereafter.
-		executor.scheduleWithFixedDelay(new LocalRepoListQuery(), 0, 5, TimeUnit.SECONDS);
+		// Query local repo information immediately and every two minutes thereafter. TODO: event-based
+		executor.scheduleWithFixedDelay(new LocalRepoListQuery(), 0, 2, TimeUnit.MINUTES);
 	}
 
 	/**
