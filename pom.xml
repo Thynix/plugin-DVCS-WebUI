@@ -39,6 +39,14 @@
         </dependency>
     </dependencies>
 
+    <repositories>
+             <repository>
+                      <url>https://maven.pterodactylus.net/</url>
+                      <name>Bombe's Maven repository</name>
+                      <id>pterodactylus</id>
+             </repository>
+    </repositories>
+         
     <build>
         <plugins>
             <plugin>
